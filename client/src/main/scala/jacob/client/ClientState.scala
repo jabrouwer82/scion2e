@@ -1,35 +1,20 @@
 package jacob.client
 
-import cats.MonadError
-
 import model._
 
-final case class ClientState[F[_]: MonadError[*[_], Throwable]](state: Map[String, ChartState[F]]) {
+final case class ClientState(state: Option[Character]) {
 
-  def +(pair: (String, ChartState[F])): ClientState[F] =
-    ClientState(state + pair)
+  def loadChar(char: Character): ClientState =
+    ClientState(Some(char))
 
-  def -(key: String): ClientState[F] =
-    ClientState(state - key)
+  def deleteChar: ClientState =
+    ClientState(None)
 
-  def get(id: String): F[ChartState[F]] =
-    MonadError[F, Throwable].catchNonFatal(state(id))
-
-  def partition(data: Option[Character]): ClientState.Partition = {
-    val keySet = state.keySet
-    val containerIds = data.map(_.id)
-
-    val removed = keySet.diff(containerIds)
-    val added = containerIds.diff(keySet)
-    val updated = keySet.intersect(containerIds)
-
-    ClientState.Partition(removed, added, updated)
-  }
+  def get(id: String): Option[Character] =
+    MonadError[F, Throwable].catchNonFatal(state.get)
 }
 
 object ClientState {
-  case class Partition(removed: Set[String], added: Set[String], updated: Set[String])
-
-  def empty[F[_]: MonadError[*[_], Throwable]]: ClientState[F] =
-    ClientState(Map.empty)
+  def empty: ClientState =
+    ClientState(None)
 }

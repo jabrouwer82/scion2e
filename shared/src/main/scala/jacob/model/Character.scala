@@ -5,3 +5,8 @@ final case class Character(
   name: String,
   level: Int,
 )
+
+final case class CharacterWithoutId(
+  name: String,
+  level: Int,
+)
