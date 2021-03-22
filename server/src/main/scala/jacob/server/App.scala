@@ -7,7 +7,7 @@ import fs2.concurrent.Topic
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 
-import jacob.model._
+import jacob.shared.model._
 
 object App extends IOApp {
 

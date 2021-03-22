@@ -1,4 +1,4 @@
-import Dependencies._
+import Scapegoat._
 
 // The scapegoat sbt plugin adds intelligent settings and tasks for scapegoat,
 // but doesn't allow inspections to be run on compile.
@@ -6,6 +6,7 @@ import Dependencies._
 // then configures scapegoat using the smart sbt settings and then transforms those
 // settings and applies them to the scalac plugin too.
 // Using values defined in Dependencies.scala, we can keep versions in sync.
+
 
 addCompilerPlugin("com.sksamuel.scapegoat" %% "scalac-scapegoat-plugin" % scapegoatPluginV cross CrossVersion.full)
 

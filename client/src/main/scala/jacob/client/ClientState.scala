@@ -1,6 +1,6 @@
 package jacob.client
 
-import model._
+import jacob.shared.model._
 
 final case class ClientState(state: Option[Character]) {
 

@@ -5,7 +5,6 @@ import cats.implicits._
 import org.scalajs.dom._
 
 import jacob.client._
-import jacob.model._
 
 class DomImpl[F[_]: Sync] extends Dom[F] {
   override def init: F[Unit] = {

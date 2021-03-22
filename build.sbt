@@ -4,7 +4,6 @@ ThisBuild / organization := "jacob"
 ThisBuild / organizationName := "jacob"
 
 val mouseV = "1.0.0"
-val scapegoatPluginV = "1.4.8"
 val utestV = "0.7.4"
 val scalaJsDomV = "1.1.0"
 val http4sV = "0.21.20"
@@ -15,6 +14,7 @@ val catsV = "2.3.3"
 val fs2V = "2.5.3"
 val munitV = "0.7.22"
 val munitCatsEffectV = "0.13.1"
+val tapirV = "0.17.19"
 
 lazy val root = (project in file("."))
   .aggregate(shared.jvm, shared.js, server, client)
@@ -29,6 +29,11 @@ lazy val root = (project in file("."))
 
 lazy val shared = crossProject(JVMPlatform, JSPlatform)
   .in(file("shared"))
+  .settings(
+    libraryDependencies ++= List(
+      "io.circe" %%% "circe-core" % circeV,
+    ),
+  )
 
 lazy val server = (project in file("server"))
   .settings(
@@ -37,7 +42,6 @@ lazy val server = (project in file("server"))
       "org.http4s" %% "http4s-blaze-server" % http4sV,
       "org.http4s" %% "http4s-dsl" % http4sV,
       "org.http4s" %% "http4s-circe" % http4sV,
-      "io.circe" %% "circe-core" % circeV,
       "org.typelevel" %% "mouse" % mouseV,
       "org.slf4j" % "slf4j-simple" % slf4jV,
       "org.scalameta" %%% "munit" % munitV % Test,
@@ -50,7 +54,7 @@ lazy val server = (project in file("server"))
 lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
   .settings(
-    scalacOptions ++= compilerOptions.filterNot(_ == "-Ywarn-unused:params").filterNot(_ == "-Ywarn-unused:privates"),
+    // scalacOptions ++= compileOptions.filterNot(_ == "-Ywarn-unused:params").filterNot(_ == "-Ywarn-unused:privates"),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV cross CrossVersion.full),
     cleanFiles ++= List(
       (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
@@ -64,6 +68,7 @@ lazy val client = (project in file("client"))
       "co.fs2" %%% "fs2-core" % fs2V,
       "io.circe" %%% "circe-generic" % circeV,
       "io.circe" %%% "circe-parser" % circeV,
+      "com.softwaremill.sttp.tapir" %%% "tapir-sttp-client" % tapirV,
       "org.scalameta" %%% "munit" % munitV % Test,
       "org.typelevel" %%% "munit-cats-effect-2" % munitCatsEffectV % Test
     ),

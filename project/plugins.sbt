@@ -14,7 +14,10 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 // Automatically check for dependency updates.
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.2")
 
+// Allows cross building between jvm and js targets.
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
+
 // ScalaJS, duh
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.5.0")
 // Brings DOM stuff to NodeJs
-libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0"
+// libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0"

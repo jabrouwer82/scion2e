@@ -1,6 +1,6 @@
 package jacob.client
 
-import jacob.model._
+import jacob.shared.model._
 
 trait Dom[F[_]] {
   def init: F[Unit]
