@@ -1,29 +1,34 @@
 package jacob.server.impl
 
+import java.util.concurrent.atomic.AtomicReference
 import java.util.UUID
+
 import cats.implicits._
 import cats.effect._
 
 import jacob.model._
 import jacob.server._
 
-final case class CharacterRepoInMemory[F[_]](implicit F: Sync[F]) extends CharacterRepo[F] {
-  var state: Map[String, Character] = Map.empty
+final class CharacterRepoInMemory[F[_]](implicit F: Sync[F]) extends CharacterRepo[F] {
+  val stateA: AtomicReference[Map[UUID, Character]] = new AtomicReference(Map.empty)
 
-  def getChar(id: String): F[Option[Character]] =
-    F.delay(state.get(id))
+  override def getAllChars(): F[List[Character]] =
+    F.delay(stateA.get().values.toList)
 
-  def addChar(char: CharacterWithoutId): F[String] = F.delay {
-    val id = UUID.randomUUID().toString()
-    state = state + (id, char)
+  override def getChar(id: UUID): F[Option[Character]] =
+    F.delay(stateA.get().get(id))
+
+  override def createChar(char: CharacterWithoutId): F[UUID] = F.delay {
+    val id = UUID.randomUUID()
+    stateA.getAndUpdate(state => state + (id -> char))
     id
   }
 
-  def updateChar(char: Character): F[Unit] = F.delay {
-    state = state - (char.id) + (char.id, char)
+  override def updateChar(charId: UUID, char: CharacterWithoutId): F[Unit] = F.delay {
+    stateA.getAndUpdate(state => state - (char.id) + (char.id -> char))
   } *> F.unit
 
-  def deleteChar(id: String): F[Unit] = F.delay {
-    state = state - id
+  override def deleteChar(id: UUID): F[Unit] = F.delay {
+    stateA.getAndUpdate(state => state - id)
   } *> F.unit
 }

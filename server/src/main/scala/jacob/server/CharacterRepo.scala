@@ -1,12 +1,13 @@
 package jacob.server
 
-import cats.effect._
+import java.util.UUID
 
-import jacob.model._
+import jacob.shared.model._
 
-abstract class CharacterRepo[F[_]: Sync] {
+abstract class CharacterRepo[F[_]] {
+  def getAllChars(): F[List[Character]]
   def getChar(id: String): F[Option[Character]]
-  def addChar(char: CharacterWithoutId): F[String]
-  def updateChar(char: Character): F[Unit]
+  def createChar(char: CharacterWithoutId): F[String]
+  def updateChar(charId: UUID, char: CharacterWithoutId): F[Unit]
   def deleteChar(id: String): F[Unit]
 }

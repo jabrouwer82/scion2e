@@ -17,7 +17,7 @@ val munitCatsEffectV = "0.13.1"
 val tapirV = "0.17.19"
 
 lazy val root = (project in file("."))
-  .aggregate(shared.jvm, shared.js, server, client)
+  .aggregate(common.jvm, common.js, server, client)
   .settings(
     Compile / run := Def
       .sequential(
@@ -27,11 +27,12 @@ lazy val root = (project in file("."))
       .value
   )
 
-lazy val shared = crossProject(JVMPlatform, JSPlatform)
-  .in(file("shared"))
+lazy val common = crossProject(JVMPlatform, JSPlatform)
+  .in(file("common"))
   .settings(
     libraryDependencies ++= List(
       "io.circe" %%% "circe-core" % circeV,
+      "com.softwaremill.sttp.tapir" %%% "tapir-json-circe" % tapirV,
     ),
   )
 
@@ -44,12 +45,13 @@ lazy val server = (project in file("server"))
       "org.http4s" %% "http4s-circe" % http4sV,
       "org.typelevel" %% "mouse" % mouseV,
       "org.slf4j" % "slf4j-simple" % slf4jV,
+      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirV,
       "org.scalameta" %%% "munit" % munitV % Test,
       "org.typelevel" %%% "munit-cats-effect-2" % munitCatsEffectV % Test
     ),
     testFrameworks += new TestFramework("munit.Framework"),
   )
-  .dependsOn(shared.jvm)
+  .dependsOn(common.jvm)
 
 lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
