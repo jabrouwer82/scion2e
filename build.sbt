@@ -15,6 +15,7 @@ val fs2V = "2.5.3"
 val munitV = "0.7.22"
 val munitCatsEffectV = "0.13.1"
 val tapirV = "0.17.19"
+val shapelessV = "2.3.3"
 
 lazy val root = (project in file("."))
   .aggregate(common.jvm, common.js, server, client)
@@ -33,6 +34,7 @@ lazy val common = crossProject(JVMPlatform, JSPlatform)
     libraryDependencies ++= List(
       "io.circe" %%% "circe-core" % circeV,
       "com.softwaremill.sttp.tapir" %%% "tapir-json-circe" % tapirV,
+      "com.chuusai" %%% "shapeless" % shapelessV,
     ),
   )
 
@@ -46,6 +48,9 @@ lazy val server = (project in file("server"))
       "org.typelevel" %% "mouse" % mouseV,
       "org.slf4j" % "slf4j-simple" % slf4jV,
       "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirV,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirV,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirV,
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s" % tapirV,
       "org.scalameta" %%% "munit" % munitV % Test,
       "org.typelevel" %%% "munit-cats-effect-2" % munitCatsEffectV % Test
     ),

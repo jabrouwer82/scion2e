@@ -1,18 +1,19 @@
 package jacob.server
 
-import cats._
-import cats.data._
 import cats.effect._
-import sttp.tapir.server.http4s.Http4sServerInterpreter
+import cats.data._
+import cats.implicits._
+import sttp.tapir.server.http4s._
 import org.http4s._
 
-import jacob.shared.api._
-import jacob.shared.model._
+import jacob.common.api._
 
-final case class CharacterRoutes[F[_]](charRepo: CharacterRepo[F]) {
+final case class CharacterRoutes[F[_]: Concurrent: ContextShift: Http4sServerOptions: Timer](
+  charRepo: CharacterRepo[F]
+) {
 
   val getAllChars: HttpRoutes[F] =
-    Http4sServerInterpreter.toRoutes(CharacterApi.getAllChars)(charRepo.getAllChars _)
+    Http4sServerInterpreter.toRoutes(CharacterApi.getAllChars)(_ => charRepo.getAllChars())
 
   val getChar: HttpRoutes[F] =
     Http4sServerInterpreter.toRoutes(CharacterApi.getChar)(charRepo.getChar _)
@@ -33,5 +34,5 @@ final case class CharacterRoutes[F[_]](charRepo: CharacterRepo[F]) {
       createChar,
       updateChar,
       deleteChar,
-    ).reduceLeft(SemigroupK[HttpRoutes[F]].combineK)
+    ).reduceLeft(_ <+> _)
 }
