@@ -16,8 +16,11 @@ import jacob.common.api._
 
 object App extends IOApp {
 
+  val address: String = "localhost"
+  val port: Int = 8292
+
   val charRepo: CharacterRepo[IO] = new CharacterRepoInMemory[IO]
-  val charRoutes: CharacterRoutes[IO] = CharacterRoutes[IO](charRepo)
+  val charRoutes: CharacterRoutes[IO] = CharacterRoutesReal[IO](charRepo)
 
   val openApiDocs: OpenAPI = OpenAPIDocsInterpreter.toOpenAPI(CharacterApi.endpoints, "Char", "1.0.0")
   val openApiYml: String = openApiDocs.toYaml
@@ -36,7 +39,7 @@ object App extends IOApp {
       .resource
       .use { _ =>
         IO {
-          println("Go to: http://localhost:8080/docs")
+          println(s"Go to: http://$address:$port/docs")
           println("Press any key to exit ...")
           scala.io.StdIn.readLine()
           ExitCode.Success

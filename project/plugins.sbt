@@ -21,3 +21,9 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.5.0")
 // Brings DOM stuff to NodeJs
 // libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0"
+
+// Allows Npm/webpack deps in scalajs
+addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.20.0")
+
+ // Allows packages from github, ugh
+addSbtPlugin("com.codecommit" % "sbt-github-packages" % "0.5.2")

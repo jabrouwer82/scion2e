@@ -16,6 +16,10 @@ val munitV = "0.7.22"
 val munitCatsEffectV = "0.13.1"
 val tapirV = "0.17.19"
 val shapelessV = "2.3.3"
+val sttpClientV = "3.1.9"
+val laminarMdV = "0.1.0"
+val laminarV = "0.12.1"
+
 
 lazy val root = (project in file("."))
   .aggregate(common.jvm, common.js, server, client)
@@ -51,8 +55,6 @@ lazy val server = (project in file("server"))
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirV,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirV,
       "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-http4s" % tapirV,
-      "org.scalameta" %%% "munit" % munitV % Test,
-      "org.typelevel" %%% "munit-cats-effect-2" % munitCatsEffectV % Test
     ),
     testFrameworks += new TestFramework("munit.Framework"),
   )
@@ -60,7 +62,9 @@ lazy val server = (project in file("server"))
 
 lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSBundlerPlugin)
   .settings(
+    resolvers += Resolver.githubPackages("uosis"),
     // scalacOptions ++= compileOptions.filterNot(_ == "-Ywarn-unused:params").filterNot(_ == "-Ywarn-unused:privates"),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV cross CrossVersion.full),
     cleanFiles ++= List(
@@ -76,12 +80,13 @@ lazy val client = (project in file("client"))
       "io.circe" %%% "circe-generic" % circeV,
       "io.circe" %%% "circe-parser" % circeV,
       "com.softwaremill.sttp.tapir" %%% "tapir-sttp-client" % tapirV,
-      "org.scalameta" %%% "munit" % munitV % Test,
-      "org.typelevel" %%% "munit-cats-effect-2" % munitCatsEffectV % Test
+      "com.softwaremill.sttp.client3" %%% "cats" % sttpClientV,
+      "com.github.uosis" %%% "laminar-web-components-material" % laminarMdV,
+      "com.raquo" %%% "laminar" % laminarV,
     ),
     scalaJSUseMainModuleInitializer := true,
-    testFrameworks += new TestFramework("munit.Framework"),
     scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
   )
+  .dependsOn(common.js)
 
 

@@ -1,20 +1,23 @@
 package jacob.client
 
-import jacob.shared.model._
+// import cats._
 
-final case class ClientState(state: Option[Character]) {
+// import jacob.common.model._
 
-  def loadChar(char: Character): ClientState =
-    ClientState(Some(char))
+final case class ClientState()
+// final case class ClientState[F[_]: Monad](state: Option[Character]) {
 
-  def deleteChar: ClientState =
-    ClientState(None)
+//   def loadChar(char: Character): ClientState[F] =
+//     ClientState(Some(char))
 
-  def get(id: String): Option[Character] =
-    MonadError[F, Throwable].catchNonFatal(state.get)
-}
+//   def deleteChar: ClientState[F] =
+//     ClientState(None)
 
-object ClientState {
-  def empty: ClientState =
-    ClientState(None)
-}
+//   def get(): F[Option[Character]] =
+//     MonadError[F, Throwable].catchNonFatal(state.get)
+// }
+
+// object ClientState {
+//   def empty[F[_]: Monad]: ClientState[F] =
+//     ClientState(None)
+// }
