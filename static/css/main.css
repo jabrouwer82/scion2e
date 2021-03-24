@@ -6,6 +6,16 @@
   --mdc-theme-primary: #065eac;
 }
 
+.card-text {
+  padding: 16px;
+}
+
+.half-width {
+  width: 50%;
+}
+
+/* Don't know these are important */
+
 body {
   margin: 0;
 }

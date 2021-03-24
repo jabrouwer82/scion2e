@@ -1,5 +1,7 @@
 package jacob.client.impl
 
+import scala.math._
+
 import cats.effect._
 import cats.implicits._
 import com.github.uosis.laminar.webcomponents.material._
@@ -11,27 +13,61 @@ import jacob.client._
 
 final case class DomImpl[F[_]](charClient: CharacterClient[F])(implicit F: Sync[F]) extends Dom[F] {
   override def init: F[Unit] = for {
-    header <- mdHeader
-    _ <- renderF(dom.document.body, header)
+    header <- mdContent
+    _ <- renderOnBody(header)
   } yield ()
 
-  val mdHeader = F.delay(
-    TopAppBarFixed(
-      _.slots.title(span("Character")),
-    )
-  )
+  val mdContent = F.delay {
+    val charName = Var("Character Name")
+    val charLevel = Var(1)
+    // val charLevelBus = new EventBus[Int]
 
-  val mdButton = F.delay(
-    Button(
-      _.label := "Create A New Character",
-      _.raised := true,
-    )
-  )
+    // val charLevel: Signal[Int] = charLevelBus.events.foldLeft(initial = 0)(_ + _)
 
-  def renderF(container: dom.Element, node: ReactiveElement.Base): F[Unit] =
+    div(
+      TopAppBarFixed(
+        _.slots.title(
+          span("Scion 2E CharGen")
+        ),
+      ),
+      div(
+        cls := "mdc-top-app-bar--fixed-adjust",
+        cls := "half-width",
+        div(
+          cls := "mdc-card",
+          p(
+            child.text <-- charName.signal,
+            cls := "card-text",
+          ),
+          p(
+            child.text <-- charLevel.signal.map(_.toString),
+            cls := "card-text",
+          ),
+          Textfield(
+            _.label := "Character Name",
+            _ => onInput.mapToValue --> charName.writer,
+          ),
+          Button(
+            _.label := "+",
+            _.raised := true,
+            _.disabled <-- charLevel.signal.map(_ == 20),
+            _ => onClick.mapTo(min(20, charLevel.now() + 1)) --> charLevel.writer,
+          ),
+          Button(
+            _.label := "-",
+            _.raised := true,
+            _.disabled <-- charLevel.signal.map(_ == 1),
+            _ => onClick.mapTo(max(1, charLevel.now() - 1)) --> charLevel.writer,
+          ),
+        )
+      ),
+    )
+  }
+
+  def renderOnBody(node: ReactiveElement.Base): F[Unit] =
     F.delay(
       documentEvents.onDomContentLoaded.foreach { _ =>
-        render(container, node)
+        render(dom.document.body, node)
         ()
       } (unsafeWindowOwner)
     ) *> F.unit
