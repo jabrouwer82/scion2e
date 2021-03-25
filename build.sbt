@@ -67,12 +67,12 @@ lazy val client = (project in file("client"))
     resolvers += "jitpack" at "https://jitpack.io",
     // scalacOptions ++= compileOptions.filterNot(_ == "-Ywarn-unused:params").filterNot(_ == "-Ywarn-unused:privates"),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV cross CrossVersion.full),
-    cleanFiles ++= List(
-      (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
-      (ThisBuild / baseDirectory).value / "static" / "js" / "client.js.map",
-    ),
-    (Compile / fastOptJS / artifactPath) := (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
-    (Compile / fullOptJS / artifactPath) := (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
+    // cleanFiles ++= List(
+    //   (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
+    //   (ThisBuild / baseDirectory).value / "static" / "js" / "client.js.map",
+    // ),
+    // (Compile / fastOptJS / artifactPath) := (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
+    // (Compile / fullOptJS / artifactPath) := (ThisBuild / baseDirectory).value / "static" / "js" / "client.js",
     libraryDependencies ++= List(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "org.typelevel" %%% "cats-effect" % catsV,
@@ -84,7 +84,9 @@ lazy val client = (project in file("client"))
       "com.github.outwatch.outwatch" %%% "outwatch" % outwatchV,
     ),
     scalaJSUseMainModuleInitializer := true,
-    scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
+    // scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
+    scalaJSLinkerConfig in (Compile, fastOptJS) ~= { _.withSourceMap(false) },
+    useYarn := true,
   )
   .dependsOn(common.js)
 
