@@ -19,7 +19,7 @@ val shapelessV = "2.3.3"
 val sttpClientV = "3.1.9"
 val laminarMdV = "0.1.0"
 val laminarV = "0.12.1"
-
+val outwatchV = "0.9.1"
 
 lazy val root = (project in file("."))
   .aggregate(common.jvm, common.js, server, client)
@@ -64,7 +64,7 @@ lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
   .enablePlugins(ScalaJSBundlerPlugin)
   .settings(
-    resolvers += Resolver.githubPackages("uosis"),
+    resolvers += "jitpack" at "https://jitpack.io",
     // scalacOptions ++= compileOptions.filterNot(_ == "-Ywarn-unused:params").filterNot(_ == "-Ywarn-unused:privates"),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV cross CrossVersion.full),
     cleanFiles ++= List(
@@ -81,8 +81,7 @@ lazy val client = (project in file("client"))
       "io.circe" %%% "circe-parser" % circeV,
       "com.softwaremill.sttp.tapir" %%% "tapir-sttp-client" % tapirV,
       "com.softwaremill.sttp.client3" %%% "cats" % sttpClientV,
-      "com.github.uosis" %%% "laminar-web-components-material" % laminarMdV,
-      "com.raquo" %%% "laminar" % laminarV,
+      "com.github.outwatch.outwatch" %%% "outwatch" % outwatchV,
     ),
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
