@@ -19,6 +19,7 @@ val shapelessV = "2.3.3"
 val sttpClientV = "3.1.9"
 val laminarMdV = "0.1.0"
 val laminarV = "0.12.1"
+val newtypeV = "0.4.4"
 
 
 lazy val root = (project in file("."))
@@ -35,10 +36,13 @@ lazy val root = (project in file("."))
 lazy val common = crossProject(JVMPlatform, JSPlatform)
   .in(file("common"))
   .settings(
+    scalacOptions += "-Ymacro-annotations",
     libraryDependencies ++= List(
       "io.circe" %%% "circe-core" % circeV,
       "com.softwaremill.sttp.tapir" %%% "tapir-json-circe" % tapirV,
+      "com.softwaremill.sttp.tapir" %% "tapir-newtype" % tapirV,
       "com.chuusai" %%% "shapeless" % shapelessV,
+      "io.estatico" %% "newtype" % newtypeV,
     ),
   )
 
