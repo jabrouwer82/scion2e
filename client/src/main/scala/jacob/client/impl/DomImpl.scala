@@ -1,76 +1,140 @@
 package jacob.client.impl
 
-import scala.math._
-
-import cats.effect._
 import cats.implicits._
-import com.github.uosis.laminar.webcomponents.material._
-import com.raquo.laminar.api.L._
-import com.raquo.laminar.nodes.ReactiveElement
-import org.scalajs.dom
+import cats.effect._
+import colibri.ext.monix._
+import outwatch._
+import outwatch.dsl._
+import outwatch.reactive.handlers.monix._
+import monix.reactive.subjects._
+import monix.execution.Scheduler.Implicits.global
 
 import jacob.client._
+import jacob.common.model._
 
-final case class DomImpl[F[_]](charClient: CharacterClient[F])(implicit F: Sync[F]) extends Dom[F] {
-  override def init: F[Unit] = for {
-    header <- mdContent
-    _ <- renderOnBody(header)
-  } yield ()
+final case class CharacterSubject(
+  name: BehaviorSubject[String],
+  level: BehaviorSubject[Int],
+)
 
-  val mdContent = F.delay {
-    val charName = Var("Character Name")
-    val charLevel = Var(1)
-    // val charLevelBus = new EventBus[Int]
+object CharacterSubject {
+  def empty: SyncIO[CharacterSubject] =
+    SyncIO(CharacterSubject(BehaviorSubject(""), BehaviorSubject(1)))
 
-    // val charLevel: Signal[Int] = charLevelBus.events.foldLeft(initial = 0)(_ + _)
+  def fromCharacter(char: Character): SyncIO[CharacterSubject] =
+    SyncIO(CharacterSubject(BehaviorSubject(char.name), BehaviorSubject(char.level)))
+}
 
+final case class DomImpl[F[_]: Sync](charClient: CharacterClient[F]) extends Dom[F] {
+  override def init: F[Unit] =
+    OutWatch.renderReplace[F]("#app", div(app))
+
+  def app: SyncIO[VNode] = for {
+    charName <- monixHandler("Character name")
+    charLevel <- monixHandler(0)
+    safeCharLevel = charLevel.lmap((v: Int) => math.min(20, math.max(1, v)))
+  } yield mdContent(charName, safeCharLevel)
+
+  def monixHandler[A](initial: A): SyncIO[BehaviorSubject[A]]  =
+    SyncIO(BehaviorSubject(initial))
+
+  def mdContent(
+    charName: Handler[String],
+    charLevel: Handler[Int],
+  ): VNode= div(
+    cls := "mdl-layout",
+    cls := "mdl-js-layout",
+    cls := "mdl-layout--fixed-header",
+    cls := "mdl-layout--no-drawer-button",
+    header(
+      cls := "mdl-layout__header",
+      div(
+        cls := "mdl-layout__header-row",
+        span(
+          cls := "mdl-layout-title",
+          "Scion 2E CharGen",
+        )
+      )
+    ),
     div(
-      TopAppBarFixed(
-        _.slots.title(
-          span("Scion 2E CharGen")
+      cls := "mdl-layout__content",
+      div(
+        cls := "page-content",
+        p(charName),
+        p(charLevel.map(_.toString)),
+        mdButton(
+          "+",
+          onClick(charLevel.map(_ + 1)) --> charLevel,
+        ),
+        mdButton(
+          "-",
+          onClick(charLevel.map(_ - 1)) --> charLevel,
         ),
       ),
-      div(
-        cls := "mdc-top-app-bar--fixed-adjust",
-        cls := "half-width",
-        div(
-          cls := "mdc-card",
-          p(
-            child.text <-- charName.signal,
-            cls := "card-text",
-          ),
-          p(
-            child.text <-- charLevel.signal.map(_.toString),
-            cls := "card-text",
-          ),
-          Textfield(
-            _.label := "Character Name",
-            _ => onInput.mapToValue --> charName.writer,
-          ),
-          Button(
-            _.label := "+",
-            _.raised := true,
-            _.disabled <-- charLevel.signal.map(_ == 20),
-            _ => onClick.mapTo(min(20, charLevel.now() + 1)) --> charLevel.writer,
-          ),
-          Button(
-            _.label := "-",
-            _.raised := true,
-            _.disabled <-- charLevel.signal.map(_ == 1),
-            _ => onClick.mapTo(max(1, charLevel.now() - 1)) --> charLevel.writer,
-          ),
-        )
-      ),
     )
-  }
+  )
 
-  def renderOnBody(node: ReactiveElement.Base): F[Unit] =
-    F.delay(
-      documentEvents.onDomContentLoaded.foreach { _ =>
-        render(dom.document.body, node)
-        ()
-      } (unsafeWindowOwner)
-    ) *> F.unit
+  val mdButton: VNode = button(
+    cls := "mdl-button",
+    cls := "mdl-js-button",
+    cls := "mdl-button--raised",
+    cls := "mdl-button--colored",
+  )
+
+  // val mdContent = F.delay {
+  //   val charName = Var("Character Name")
+  //   val charLevel = Var(1)
+  //   // val charLevelBus = new EventBus[Int]
+
+  //   // val charLevel: Signal[Int] = charLevelBus.events.foldLeft(initial = 0)(_ + _)
+
+  //   div(
+  //     TopAppBarFixed(
+  //       _.slots.title(
+  //         span("Scion 2E CharGen")
+  //       ),
+  //     ),
+  //     div(
+  //       cls := "mdc-top-app-bar--fixed-adjust",
+  //       cls := "half-width",
+  //       div(
+  //         cls := "mdc-card",
+  //         p(
+  //           child.text <-- charName.signal,
+  //           cls := "card-text",
+  //         ),
+  //         p(
+  //           child.text <-- charLevel.signal.map(_.toString),
+  //           cls := "card-text",
+  //         ),
+  //         Textfield(
+  //           _.label := "Character Name",
+  //           _ => onInput.mapToValue --> charName.writer,
+  //         ),
+  //         Button(
+  //           _.label := "+",
+  //           _.raised := true,
+  //           _.disabled <-- charLevel.signal.map(_ == 20),
+  //           _ => onClick.mapTo(min(20, charLevel.now() + 1)) --> charLevel.writer,
+  //         ),
+  //         Button(
+  //           _.label := "-",
+  //           _.raised := true,
+  //           _.disabled <-- charLevel.signal.map(_ == 1),
+  //           _ => onClick.mapTo(max(1, charLevel.now() - 1)) --> charLevel.writer,
+  //         ),
+  //       )
+  //     ),
+  //   )
+  // }
+
+  // def renderOnBody(node: ReactiveElement.Base): F[Unit] =
+  //   F.delay(
+  //     documentEvents.onDomContentLoaded.foreach { _ =>
+  //       render(dom.document.body, node)
+  //       ()
+  //     } (unsafeWindowOwner)
+  //   ) *> F.unit
 
   // val actionVar = Var("Do the thing")
   // val allowedIcons = List("🎉", "🚀", "🍉")

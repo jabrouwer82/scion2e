@@ -2,65 +2,10 @@
   font-family: 'Roboto', sans-serif;
 }
 
-:root {
-  --mdc-theme-primary: #065eac;
-}
-
 .card-text {
   padding: 16px;
 }
 
 .half-width {
   width: 50%;
-}
-
-/* Don't know these are important */
-
-body {
-  margin: 0;
-}
-
-.label {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-hr {
-  margin-bottom: 16px;
-}
-
-.mdc-layout-grid {
-  max-width: 1440px;
-}
-
-.mdc-layout-grid__inner {
-  margin-bottom: 16px;
-}
-
-.mdc-card {
-  padding-top: 16px;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-.ct-chart {
-  margin-top: 16px;
-  height: 320px;
-}
-
-.button-div {
-  text-align: center;
-  padding: 8px;
-}
-
-.hidden {
-  display: none;
-}
-
-.ct-series-a .ct-line {
-  stroke: #00357c;
-}
-
-.ct-series-a .ct-area {
-  fill: #00357c;
 }

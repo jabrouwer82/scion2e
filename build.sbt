@@ -17,10 +17,11 @@ val munitCatsEffectV = "0.13.1"
 val tapirV = "0.17.19"
 val shapelessV = "2.3.3"
 val sttpClientV = "3.1.9"
-val laminarMdV = "0.1.0"
-val laminarV = "0.12.1"
 val newtypeV = "0.4.4"
+val outwatchV = "8b875c4c09"
+// val colibriV = "6000107"
 
+lazy val copyFastOptJS = TaskKey[Unit]("copyFastOptJS", "Copy javascript files to target directory")
 
 lazy val root = (project in file("."))
   .aggregate(common.jvm, common.js, server, client)
@@ -68,7 +69,7 @@ lazy val client = (project in file("client"))
   .enablePlugins(ScalaJSPlugin)
   .enablePlugins(ScalaJSBundlerPlugin)
   .settings(
-    resolvers += Resolver.githubPackages("uosis"),
+    resolvers += "jitpack" at "https://jitpack.io",
     // scalacOptions ++= compileOptions.filterNot(_ == "-Ywarn-unused:params").filterNot(_ == "-Ywarn-unused:privates"),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV cross CrossVersion.full),
     // cleanFiles ++= List(
@@ -85,14 +86,37 @@ lazy val client = (project in file("client"))
       "io.circe" %%% "circe-parser" % circeV,
       "com.softwaremill.sttp.tapir" %%% "tapir-sttp-client" % tapirV,
       "com.softwaremill.sttp.client3" %%% "cats" % sttpClientV,
-      "com.github.uosis" %%% "laminar-web-components-material" % laminarMdV,
-      "com.raquo" %%% "laminar" % laminarV,
+      "com.github.outwatch.outwatch" %%% "outwatch" % outwatchV,
+      "com.github.outwatch.outwatch" %%% "outwatch-monix" % outwatchV,
+      // "com.github.cornerman.colibri" %%% "colibri-monix" % colibriV,
     ),
     scalaJSUseMainModuleInitializer := true,
-    // scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
-    scalaJSLinkerConfig in (Compile, fastOptJS) ~= { _.withSourceMap(false) },
     useYarn := true,
+    requireJsDomEnv in Test := true,
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
+
+    // Dev server stuff from outwatch g8 seed.
+    addCommandAlias("dev", "; compile; fastOptJS::startWebpackDevServer; devwatch; fastOptJS::stopWebpackDevServer"),
+    addCommandAlias("devwatch", "~; fastOptJS; copyFastOptJS"),
+    webpack / version := "4.43.0", 
+    startWebpackDevServer /version := "3.11.0",
+    webpackDevServerExtraArgs := Seq("--progress", "--color"),
+    webpackDevServerPort := 8293,
+    fastOptJS / webpackConfigFile := Some(baseDirectory.value / "webpack.config.dev.js"),
+
+    fastOptJS / webpackBundlingMode := BundlingMode.LibraryOnly(), // https://scalacenter.github.io/scalajs-bundler/cookbook.html#performance
+
+    // when running the "dev" alias, after every fastOptJS compile all artifacts are copied into
+    // a folder which is served and watched by the webpack devserver.
+    // this is a workaround for: https://github.com/scalacenter/scalajs-bundler/issues/180
+    copyFastOptJS := {
+      val inDir = (crossTarget in (Compile, fastOptJS)).value
+      val outDir = (crossTarget in (Compile, fastOptJS)).value / "dev"
+      val files = Seq(name.value.toLowerCase + "-fastopt-loader.js", name.value.toLowerCase + "-fastopt.js") map { p => (inDir / p, outDir / p) }
+      IO.copy(files, overwrite = true, preserveLastModified = true, preserveExecutable = true)
+    },
+
   )
   .dependsOn(common.js)
-
 
