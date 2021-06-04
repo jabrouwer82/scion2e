@@ -10,19 +10,15 @@ import monix.reactive.subjects._
 import monix.execution.Scheduler.Implicits.global
 
 import jacob.client._
-import jacob.common.model._
+import jacob.common.model.char._
 
-final case class CharacterSubject(
-  name: BehaviorSubject[String],
-  level: BehaviorSubject[Int],
-)
 
 object CharacterSubject {
-  def empty: SyncIO[CharacterSubject] =
-    SyncIO(CharacterSubject(BehaviorSubject(""), BehaviorSubject(1)))
+  def empty: SyncIO[CharacterK[BehaviorSubject]] =
+    SyncIO(CharacterK[BehaviorSubject](BehaviorSubject(Name("")), BehaviorSubject(Level(1))))
 
-  def fromCharacter(char: Character): SyncIO[CharacterSubject] =
-    SyncIO(CharacterSubject(BehaviorSubject(char.name), BehaviorSubject(char.level)))
+  def fromCharacter(char: Character): SyncIO[CharacterK[BehaviorSubject]] =
+    SyncIO(CharacterK[BehaviorSubject](BehaviorSubject(Name(char.name)), BehaviorSubject(Level(char.level))))
 }
 
 final case class DomImpl[F[_]: Sync](charClient: CharacterClient[F]) extends Dom[F] {
@@ -30,17 +26,17 @@ final case class DomImpl[F[_]: Sync](charClient: CharacterClient[F]) extends Dom
     OutWatch.renderReplace[F]("#app", div(app))
 
   def app: SyncIO[VNode] = for {
-    charName <- monixHandler("Character name")
-    charLevel <- monixHandler(0)
-    safeCharLevel = charLevel.lmap((v: Int) => math.min(20, math.max(1, v)))
+    charName <- monixHandler(Name("Character name"))
+    charLevel <- monixHandler(Level(0))
+    safeCharLevel = charLevel.lmap((v: Level) => Level(math.min(20, math.max(1, v))))
   } yield mdContent(charName, safeCharLevel)
 
   def monixHandler[A](initial: A): SyncIO[BehaviorSubject[A]]  =
     SyncIO(BehaviorSubject(initial))
 
   def mdContent(
-    charName: Handler[String],
-    charLevel: Handler[Int],
+    charName: Handler[Name],
+    charLevel: Handler[Level],
   ): VNode= div(
     cls := "mdl-layout",
     cls := "mdl-js-layout",
@@ -64,11 +60,11 @@ final case class DomImpl[F[_]: Sync](charClient: CharacterClient[F]) extends Dom
         p(charLevel.map(_.toString)),
         mdButton(
           "+",
-          onClick(charLevel.map(_ + 1)) --> charLevel,
+          onClick(charLevel.map(l => Level(l + 1))) --> charLevel,
         ),
         mdButton(
           "-",
-          onClick(charLevel.map(_ - 1)) --> charLevel,
+          onClick(charLevel.map(l => Level(l - 1))) --> charLevel,
         ),
       ),
     )
